@@ -66,8 +66,8 @@ module.exports = function(o) {
     };
   }
 
-  if (typeof opts.routes.include !== 'string') {
-    opts.routes.include = Path.dirname(Path.resolve(opts.routes.conf || __dirname));
+  if (typeof opts.routes.include === 'undefined') {
+    opts.routes.include = Path.dirname(Path.resolve(opts.routes.conf || './routes'));
   }
 
   if (!opts.routes.static || !opts.routes.static.root) {
@@ -120,7 +120,7 @@ module.exports = function(o) {
 
   server.use(Compression());
   server.use(CookieParser());
-  server.use(BodyParser.urlencoded({ extended: false }));
+  server.use(BodyParser.urlencoded({ extended: true }));
   server.use(BodyParser.json());
 
   // pop out of call stack so callers have a chance to call .use() for static assets routes (e.g., CORS for fonts)
@@ -137,21 +137,23 @@ module.exports = function(o) {
   }
 
   var base = opts.routes.include;
-  Glob.sync('*.js', {
-    cwd: base, // TODO: if we provide an api for specifying multiple routes, need to change this to the base of each route
-    nodir: true,
-    ignore: opts.routes.exclude,
-    matchBase: true,
-    realpath: true
-  }).forEach(function(f) {
-    var name = Path.basename(f, '.js'),
-        full = Path.relative(base, f).replace(rFileExt, '').replace(rPathSep, '_'); // replacement should be a valid js identifier
-    handlersByFullName[full] = handlersByName[name] = f;
-    handlers[f] = {
-      name: name,
-      full: full
-    };
-  });
+  if (base) {
+    Glob.sync('*.js', {
+      cwd: base, // TODO: if we provide an api for specifying multiple routes, need to change this to the base of each route
+      nodir: true,
+      ignore: opts.routes.exclude,
+      matchBase: true,
+      realpath: true
+    }).forEach(function(f) {
+      var name = Path.basename(f, '.js'),
+          full = Path.relative(base, f).replace(rFileExt, '').replace(rPathSep, '_'); // replacement should be a valid js identifier
+      handlersByFullName[full] = handlersByName[name] = f;
+      handlers[f] = {
+        name: name,
+        full: full
+      };
+    });
+  }
 
   // TODO: need to simplify arguments list...
   function addHandler(method, path, handler, template, route) {
@@ -199,7 +201,7 @@ module.exports = function(o) {
   // loop over specified routes and add first
   if (opts.routes && Array.isArray(opts.routes.routes)) {
     opts.routes.routes.forEach(function(route) {
-      var method = (route.method || 'any').toLowerCase();
+      var method = (route.method || 'all').toLowerCase();
       var path = route.path && route.path.value || route.path;
       var template = route.tags.template;
       var handlerPath = handlersByName[route.name] || handlersByFullName[route.name];
@@ -237,9 +239,9 @@ module.exports = function(o) {
         }else if (handler.post) {
           method = 'post';
           path = handler.post;
-        }else if (handler.any) {
-          method = 'any';
-          path = handler.any;
+        }else if (handler.all) {
+          method = 'all';
+          path = handler.all;
         }
 
         if (method && path) {

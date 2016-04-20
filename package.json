@@ -1,6 +1,6 @@
 {
   "name": "quikserve",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,10 @@
   },
   "author": "Matt Powell",
   "license": "MIT",
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/mattpowell/quikserve.git"
+  },
   "dependencies": {
     "body-parser": "^1.15.0",
     "compression": "^1.6.1",
