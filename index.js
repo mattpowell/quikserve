@@ -78,7 +78,7 @@ module.exports = function(o) {
   }
 
   if (!opts.routes.exclude) {
-    opts.routes.exclude = [Path.normalize(opts.routes.static.root + '/**'), 'node_modules/**'];
+    opts.routes.exclude = [Path.normalize(Path.relative(opts.routes.include || '.', opts.routes.static.root) + '/**'), 'node_modules/**'];
   }
 
 
