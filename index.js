@@ -239,6 +239,12 @@ module.exports = function(o) {
         }else if (handler.post) {
           method = 'post';
           path = handler.post;
+        }else if (handler.put) {
+          method = 'put';
+          path = handler.put;
+        }else if (handler['delete']) {
+          method = 'delete';
+          path = handler['delete'];
         }else if (handler.all) {
           method = 'all';
           path = handler.all;
